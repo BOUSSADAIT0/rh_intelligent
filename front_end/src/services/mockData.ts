@@ -9,6 +9,7 @@ export interface JobItem {
   requiredSkills: string[]
   niceToHaveSkills?: string[]
   description?: string
+  postedByUserId?: string
 }
 
 export interface ApplicationItem {
@@ -23,6 +24,7 @@ export interface ApplicationItem {
   recommendations?: string[]
   jobId?: string
   compatibilityPct?: number
+  userId?: string
   createdAt: string
 }
 
@@ -41,9 +43,10 @@ interface MockState {
   updateUser: (id: string, changes: Partial<SimpleUser>) => void
   removeUser: (id: string) => void
 
-  addApplication: (a: Omit<ApplicationItem, 'id' | 'status'>) => ApplicationItem
+  addApplication: (a: Omit<ApplicationItem, 'id' | 'status' >) => ApplicationItem
   removeApplication: (id: string) => void
   getApplicationById: (id: string) => ApplicationItem | undefined
+  updateApplication: (id: string, changes: Partial<ApplicationItem>) => void
 
   analyzeCv: (id: string) => Promise<void>
 
@@ -99,8 +102,8 @@ export const useMockData = create<MockState>()(persist((set, get) => ({
     { id: 'u2', name: 'Sam Recruteur', email: 'sam@rh.com', role: 'recruteur' },
   ],
   jobs: [
-    { id: 'j1', title: 'Développeur Frontend', requiredSkills: ['React', 'TypeScript'], niceToHaveSkills: ['Node', 'AWS'], description: 'Construire des interfaces modernes.' },
-    { id: 'j2', title: 'Data Engineer', requiredSkills: ['Python', 'SQL', 'Docker'], niceToHaveSkills: ['AWS'], description: 'Pipelines de données et ETL.' },
+    { id: 'j1', title: 'Développeur Frontend', requiredSkills: ['React', 'TypeScript'], niceToHaveSkills: ['Node', 'AWS'], description: 'Construire des interfaces modernes.', postedByUserId: 'u2' },
+    { id: 'j2', title: 'Data Engineer', requiredSkills: ['Python', 'SQL', 'Docker'], niceToHaveSkills: ['AWS'], description: 'Pipelines de données et ETL.', postedByUserId: 'u2' },
   ],
   applications: [
     { id: 'a1', fullName: 'Jane Doe', position: 'Développeur Frontend', jobId: 'j1', cvText: 'React, TypeScript, 5+ ans', coverLetterText: 'Passionnée par le front...', status: 'analysée', score: 85, skills: ['React', 'TypeScript'], recommendations: ['Avancer à entretien'], compatibilityPct: 100, createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
@@ -120,6 +123,7 @@ export const useMockData = create<MockState>()(persist((set, get) => ({
   },
   removeApplication: (id) => set(state => ({ applications: state.applications.filter(a => a.id !== id) })),
   getApplicationById: (id) => get().applications.find(a => a.id === id),
+  updateApplication: (id, changes) => set(state => ({ applications: state.applications.map(a => a.id === id ? { ...a, ...changes } : a) })),
 
   analyzeCv: async (id) => {
     await new Promise(r => setTimeout(r, 600))

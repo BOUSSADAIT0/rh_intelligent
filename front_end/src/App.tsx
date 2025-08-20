@@ -8,6 +8,7 @@ const Users = lazy(() => import('./pages/Users'))
 const Applications = lazy(() => import('./pages/Applications'))
 const ApplicationDetail = lazy(() => import('./pages/ApplicationDetail'))
 const Jobs = lazy(() => import('./pages/Jobs'))
+const JobBoard = lazy(() => import('./pages/JobBoard'))
 const Login = lazy(() => import('./pages/auth/Login'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
@@ -25,6 +26,9 @@ export default function App() {
           } />
           <Route path="/applications" element={
             <RequireRole roles={["admin", "recruteur", "candidat"]}><Applications /></RequireRole>
+          } />
+          <Route path="/postes" element={
+            <RequireRole roles={["candidat"]}><JobBoard /></RequireRole>
           } />
           <Route path="/applications/:id" element={
             <RequireRole roles={["admin", "recruteur", "candidat"]}><ApplicationDetail /></RequireRole>

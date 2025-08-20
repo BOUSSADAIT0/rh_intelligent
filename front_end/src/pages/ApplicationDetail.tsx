@@ -1,13 +1,24 @@
 import { useParams } from 'react-router-dom'
 import { useMockData } from '../services/mockData'
+import { useAuthStore } from '../stores/authStore'
+import { sendEmail } from '../services/emailService'
 
 export default function ApplicationDetail() {
   const { id } = useParams()
-  const { getApplicationById, getJobById } = useMockData()
+  const { getApplicationById, getJobById, updateApplication } = useMockData()
+  const user = useAuthStore(s => s.user)
   const application = id ? getApplicationById(id) : null
   const job = application?.jobId ? getJobById(application.jobId) : undefined
 
   if (!application) return <div>Introuvable.</div>
+  if (user?.role === 'candidat') {
+    const isOwner = application.userId ? application.userId === user.id : application.fullName === user.name
+    if (!isOwner) return <div>Accès refusé.</div>
+  }
+  if (user?.role === 'recruteur') {
+    const canView = application.jobId && (job?.postedByUserId === user.id)
+    if (!canView) return <div>Accès refusé.</div>
+  }
 
   return (
     <div className="space-y-4">
@@ -26,6 +37,21 @@ export default function ApplicationDetail() {
           <div className="text-lg">{application.status}</div>
         </div>
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="card p-4">
+          <div className="text-sm text-gray-500">Compatibilité</div>
+          <div className="text-lg">{application.compatibilityPct != null ? `${application.compatibilityPct}%` : '—'}</div>
+        </div>
+      </div>
+
+      {user?.role === 'recruteur' && job?.postedByUserId === user.id && (
+        <div className="card p-4 flex gap-2">
+          <button className="btn" onClick={() => updateApplication(application.id, { status: 'retenue' })}>Accepter</button>
+          <button className="btn" onClick={() => updateApplication(application.id, { status: 'rejetée' })}>Refuser</button>
+          <button className="btn" onClick={() => sendEmail(`${application.fullName.split(' ').join('.').toLowerCase()}@example.com`, 'Décision candidature', `Votre candidature est ${application.status === 'retenue' ? 'acceptée' : application.status === 'rejetée' ? 'refusée' : 'en cours'}.`)}>Envoyer réponse par email</button>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="card p-4">

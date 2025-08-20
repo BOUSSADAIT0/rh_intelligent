@@ -23,6 +23,9 @@ export function AppLayout() {
             {user && (
               <>
                 <NavLink to="/applications" className={({ isActive }) => isActive ? 'text-primary' : ''}>Candidatures</NavLink>
+                {user.role === 'candidat' && (
+                  <NavLink to="/postes" className={({ isActive }) => isActive ? 'text-primary' : ''}>Postes</NavLink>
+                )}
                 {(user.role === 'admin' || user.role === 'recruteur') && (
                   <NavLink to="/jobs" className={({ isActive }) => isActive ? 'text-primary' : ''}>Postes</NavLink>
                 )}

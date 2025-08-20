@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useMockData } from '../services/mockData'
+import { useAuthStore } from '../stores/authStore'
 
 export default function Jobs() {
   const { jobs, addJob, removeJob, updateJob } = useMockData()
+  const user = useAuthStore(s => s.user)
   const [title, setTitle] = useState('Développeur Frontend')
   const [required, setRequired] = useState('React, TypeScript')
   const [nice, setNice] = useState('Node, AWS')
@@ -12,7 +14,7 @@ export default function Jobs() {
     e.preventDefault()
     const requiredSkills = required.split(',').map(s => s.trim()).filter(Boolean)
     const niceToHaveSkills = nice.split(',').map(s => s.trim()).filter(Boolean)
-    addJob({ title, requiredSkills, niceToHaveSkills, description })
+    addJob({ title, requiredSkills, niceToHaveSkills, description, postedByUserId: user?.id })
     setTitle('')
     setRequired('')
     setNice('')
@@ -38,6 +40,7 @@ export default function Jobs() {
               <th className="p-3">Titre</th>
               <th className="p-3">Requis</th>
               <th className="p-3">Nice</th>
+              <th className="p-3">Publié par</th>
               <th className="p-3"></th>
             </tr>
           </thead>
@@ -51,6 +54,7 @@ export default function Jobs() {
                 <td className="p-3">
                   <input className="rounded-md border px-2 py-1 bg-white dark:bg-gray-900 w-full" value={(j.niceToHaveSkills ?? []).join(', ')} onChange={e => updateJob(j.id, { niceToHaveSkills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} />
                 </td>
+                <td className="p-3 text-sm text-gray-600 dark:text-gray-300">{j.postedByUserId ? (j.postedByUserId === user?.id ? (user?.name || 'Moi') : j.postedByUserId) : '—'}</td>
                 <td className="p-3 text-right">
                   <button className="btn" onClick={() => removeJob(j.id)}>Supprimer</button>
                 </td>
